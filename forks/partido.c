@@ -3,6 +3,9 @@
 #include <sys/sem.h>
 #include <unistd.h>
 #include <signal.h>
+#include <time.h>
+#include <string.h>
+#include <fcntl.h>
 #include "semun.h"
 
 
@@ -24,6 +27,23 @@ int main(void)
 	int n = 10; // Total players
 
 	int pause_time;
+
+	// Pipes
+	int data_processed;
+	int TeamA_pipe[2];
+	int TeamB_pipe[2];
+	const char some_data[] = "goal";
+	char buffer[BUFSIZ + 1];
+
+	pipe(TeamA_pipe);
+	pipe(TeamB_pipe);
+
+	memset(buffer, '\0', sizeof(buffer)); 
+
+	// Timer
+	time_t endmatch;
+	int seconds = 300; //5 minutes
+
 
 	int goalA; // Goals in goal A
 
@@ -56,13 +76,15 @@ int main(void)
 	
 	for(i = 0; i < n; i++)
 	{
-		if((pids[i] = fork()) < 0)
+		if((pids[i] = fork()) < 0) // if error in the forks 
 		{
 			perror("fork error");
 			abort();
 		}
-		else if (pids[i] == 0) 
+		else if (pids[i] == 0) // if forks were created good
 		{
+
+			sleep(1);
 			if(i % 2 == 0)
 			{
 				printf("Player ID: %d created; PPID: %d; team B\n",getpid(), getppid() );
@@ -70,8 +92,8 @@ int main(void)
 				{
 					if(playerTeamB())
 					{
-						goalA++;
-						printf("\nPartial Score: Team A %d  --  %d Team B\n", goalB, goalA);
+						//write pipe
+						data_processed = write(TeamB_pipe[1], some_data, strlen(some_data));
 					}
 				}
 			}
@@ -81,17 +103,44 @@ int main(void)
 				while(1)
 				{
 					if(playerTeamA())
-					{
-						goalB++;
-						printf("\nPartial Score: Team A %d  --  %d Team B\n", goalB, goalA);
+					{	
+						//write pipe
+						data_processed = write(TeamA_pipe[1], some_data, strlen(some_data));
 					}
 				}
 			}
-			exit(0);
+			//exit(0);
 		}
 	}
+
+	endmatch = time(NULL) + seconds;
 	
-	sleep(300); // 300 equal 5 minutes
+	printf("\nLet's start the game\n\n");	
+	
+	while(time(NULL) < endmatch)
+	{
+		//read pipe
+		if(!fcntl( TeamA_pipe[0], F_SETFL, fcntl(TeamA_pipe[0], F_GETFL) | O_NONBLOCK))
+		{
+			if ((read(TeamA_pipe[0], buffer, BUFSIZ)) > 0)
+			{
+				goalB++;
+				printf("\nPartial Score: Team A %d  --  %d Team B\n\n", goalB, goalA);
+			}
+			
+		}
+		
+		if(!fcntl( TeamB_pipe[0], F_SETFL, fcntl(TeamB_pipe[0], F_GETFL) | O_NONBLOCK))
+		{
+			if ((read(TeamB_pipe[0], buffer, BUFSIZ)) > 0)
+			{
+				goalA++;
+				printf("\nPartial Score: Team A %d  --  %d Team B\n\n", goalB, goalA);
+			}
+			
+		}
+		
+	}
 
 	// Kill all the childs 
 	for(i = 0; i < 10; i++)
@@ -102,7 +151,7 @@ int main(void)
 	
 	//delete semaphores
 	del_semvalue();
-	
+	printf("\nTime's up");	
 	printf("\n%d - match finished\n", getpid());
 	printf("\nFinal Score: Team A %d  --  %d Team B\n", goalB, goalA);
 
@@ -129,7 +178,7 @@ static int playerTeamA()
 		
 		//printf("Pause time A: %d\n", pause_timeA );
 		
-		pause_timeA = ((rand() % 15) + 5);
+		pause_timeA = ((rand() % 16) + 5);
 		sleep(pause_timeA);
 		
 		result = 0;
@@ -168,7 +217,7 @@ static int playerTeamA()
 					/* got the goal and score*/
 					
 					result = 1;
-					printf("GOOOOOLLLLL of PID: %d\nTeam A scores!!!!\n",getpid());
+					printf("\nGOOOOOLLLLL of PID: %d\nTeam A scores!!!!\n\n",getpid());
 					i = 3;
 
 					if(!semaphore_v(2))
@@ -207,9 +256,9 @@ static int playerTeamA()
 			/*Defending the goal*/
 			//printf("PID: %d is defending\n",getpid() );
 			
-			//pause_timeA = rand() % 2;
+			pause_timeA = (rand() % 11) + 5;
 			//printf("Pause time A: %d\n", pause_timeA );
-			sleep(5);
+			sleep(pause_timeA);
 			
 			if(!semaphore_v(1))
 			{
@@ -220,7 +269,7 @@ static int playerTeamA()
 	return result;
 }
 
-/* Team A Players Code */
+/* Team B Players Code */
 
 static int playerTeamB()
 {	
@@ -233,7 +282,7 @@ static int playerTeamB()
 
 	/*Wait time*/
 
-		pause_timeB = ((rand() % 15) + 5);
+		pause_timeB = ((rand() % 16) + 5);
 		//printf("Pause time B: %d\n", pause_timeB );
 		sleep(pause_timeB);
 		result = 0;
@@ -248,9 +297,9 @@ static int playerTeamB()
 		else
 		{
 			//printf("PID: %d is defending\n",getpid() );
-			pause_timeB = rand() % 2;
+			pause_timeB = (rand() % 11) + 5;
 			//printf("Pause time B: %d\n", pause_timeB );
-			sleep(5);
+			sleep(pause_timeB);
 
 			if(!semaphore_v(2)){
 
@@ -287,7 +336,7 @@ static int playerTeamB()
 				else
 				{
 					result = 1;
-					printf("GOOOOOLLLLL of PID: %d\nTeam B scores!!!!\n", getpid());
+					printf("\nGOOOOOLLLLL of PID: %d\nTeam B scores!!!!\n\n", getpid());
 					i = 3;
 
 					if(!semaphore_v(1))
