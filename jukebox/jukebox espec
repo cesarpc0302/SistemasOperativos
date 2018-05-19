@@ -1,0 +1,77 @@
+————————————————————————————————
+	JukebOS
+	Streaming de Música 
+————————————————————————————————
+
+
+Este proyecto consiste en la programación de un servidor para la distribución en línea o “streaming” de música hacia múltiples clientes conectados de forma concurrente al sistema.
+
+La  idea general es que múltiples usuarios clientes remotos, en la misma red, puedan reproducir música mediante un streaming y no mediante descargas; según la selección de canción del usuario desde una aplicación cliente que tiene acceso a los archivos en el servidor.
+
+
+	El Servidor
+—————————
+
+El servidor deberá estar programado completamente sobre un sistema operativo Linux y en el lenguaje C, usando el compilador gcc. Deberá usar sockets para la comunicación de los clientes remotos hacia un puerto y una IP conocidos el cual deberá establecer o bien configurar una resolución de nombres vía DNS o similar. 
+
+El servidor deberá atender las solicitudes y al recibir una conexión deberá crear un proceso tipo thread para que atienda a dicho cliente. 
+
+Cada thread deberá enviar los datos de música al cliente el cual va a reproducir los datos conforme los recibe, se puede utilizar un buffer para almacenamiento temporal de información que se vaya a reproducir. Debe documentar y explicar el uso de este buffer.
+
+El programa servidor deberá informar mediante una bitácora en pantalla de las acciones que ocurren en el sistema tales como: un usuario conectado, un cliente que reproduce una canción, identificando dicho cliente con su nombre de inicio de sesión y la canción que solicita. Dicha información debe quedar almacenada en un archivo de texto en el servidor. 
+
+El servidor leerá la música desde una carpeta en el sistema donde corre y debe ser fácil poder agregar y registrar nueva música en el sistema. Es decir, la música disponible no debería estar “alambrada” en el código .
+
+
+
+	El Cliente
+—————————
+
+El cliente puede ser desarrollado en cualquier lenguaje de programación que considere pertinente, y en la plataforma que prefiera: desktop, móvil, web, etc.
+
+Para iniciar sesión se solicitará un nombre al usuario para iniciar sesión. 
+
+El cliente solicitará, mediante un “protocolo” o mensajes que usted defina, la lista de canciones disponibles para ser escuchadas. 
+El usuario mediante el programa cliente podrá seleccionar una canción de entre la lista disponible para su inmediata reproducción. El usuario podrá pausar la canción, saltar a otra antes de que finalice o devolverse al menos al inicio de la canción actual para repetirla. 
+
+Una vez iniciada una canción para su reproducción el programa deberá reproducir la siguiente en la lista sin necesidad de intervención del usuario o bien en un modo aleatorio si el usuario lo desea. 
+
+La creatividad de la interfaz y facilidad de uso del programa cliente será parte de la calificación del cliente.
+
+
+	Generalidades
+————————————
+1. El cliente no deberá almacenar ninguna copia de los archivos de música, ni grandes bloques de almacenamiento temporal con dicha música. Podría almacenarse a lo más 1 archivo de forma temporal para brindar al usuario una buena calidad en la reproducción de la canción.
+
+2. En general el sistema deberá soportar la reproducción continua de archivos extensos si fuera necesario, es decir de duración larga, así como de canciones convencionales.
+
+3. Podrá emplear más de un socket por cliente si así lo require. Podrá hacer uso de pipes o memoria compartida entre los procesos hilos y el padre si requiere información adicional o de control. Podrá usar semáforos según lo requiera para el control de las operaciones.
+
+4. Cualquier código de libre acceso y abierto, de bibliotecas o no que se vaya a utilizar debe estar debidamente documentado y justificado su uso. Caso contrario sería considerado como plagio. 
+
+5. Está en libertad de utilizar librerías gráficas si lo requiere así como librerías hechas para la reproducción del audio. 
+
+6. Para los clientes debe ser posible crear y almacenar una lista de canciones como "playlist" y que el mismo se pueda seleccionar en la interfaz y que automáticamente vaya avanzando de canción en canción o en modo aleatorio en dicho “playlist”
+
+7. Se debe poder visualizar una imagen asociada a cada canción, la misma debe configurarse en el servidor para asociar un archivo de audio a cada imagen. 
+
+8. Debe ser posible tener múltiples clientes conectados de forma concurrente al servidor, reproduciendo música cualquiera disponible en el servidor
+
+9. La reproducción de videos vía streaming será considerado como puntos extra hasta 15% extra  del valor del proyecto en la nota.
+
+
+
+	Entrega
+————————————
+La fecha de este proyecto será para ser revisado en clases el Martes 29 de Mayo, por lo que su entrega en digital al correo será hasta las 12 medio día de éste día.
+La revisión será mediante un demo en vivo en clases en el laboratorio durante la hora habitual de clase.
+
+Deberá preparar su escenario de pruebas para poder evaluar el desempeño del servidor con al menos 3 clientes diferentes para pruebas simultáneas. 
+
++ Deberá preparar una documentación como informe técnico, donde explique su solución, brinde un análisis de resultados, pruebas realizadas, problemas presentados, estado del proyecto, etc. 
++ Deberá tener todas las parte de un documento formal con portada completa, abstract en inglés y demás partes. El código fuente debe estar completo y explicado en un anexo de dicho documento. 
++ Deberá enviar un correo antes de la revisión en clase con el PDF de la documentación y en un archivo comprimido aparte el código fuente completo de su servidor y de su cliente. No incluya archivos ejecutables
+
+Use el subject: SO-TEC - Proy1 JukebOS - SusNombresCompletos
+
+Mismo formato para los archivos adjuntos.
