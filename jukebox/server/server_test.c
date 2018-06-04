@@ -28,7 +28,7 @@ void* SendFileToClient(int *arg)
    	n = read(connfd,buffer,256);
    	if (n < 0) error("ERROR reading from socket");
 	strcpy(fname,buffer);	
-       
+
 
 	if (strncmp(fname, "songs.txt", strlen("songs.txt")) == 0)
 	{
@@ -51,11 +51,26 @@ void* SendFileToClient(int *arg)
             printf("File open error");
             return 1;   
         }   
+	if(fp) {
+  		fseek(fp, 0 , SEEK_END);
+		unsigned long lval = ftell(fp);
+      		char buf [50];
+      		sprintf (buf, "%lu" , lval );
+		printf("file size: %s\n",buf);
+  		fseek(fp, 0 , SEEK_SET);// needed for next read from beginning of file
+sleep(1);
+		write(connfd, buf, strlen(buf));
+
+		read(connfd,buffer,256);
+
+		
+
+	}
 
         /* Read data from file and send it */
         while(1)
         {
-            /* First read file in chunks of 256 bytes */
+            /* First read file in chunks of 1024 bytes */
             unsigned char buff[1024]={0};
             int nread = fread(buff,1,1024,fp);
             //printf("Bytes read %d \n", nread);        
@@ -63,7 +78,7 @@ void* SendFileToClient(int *arg)
             /* If read was success, send data. */
             if(nread > 0)
             {
-                //printf("Sending \n");
+                //printf("Sending...");
                 write(connfd, buff, nread);
             }
             if (nread < 1024)
